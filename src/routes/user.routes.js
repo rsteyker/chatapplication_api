@@ -2,11 +2,13 @@ const { Router } = require('express');
 const { createUser, loginUser, getFindAllUsers } = require('../controllers/user.controllers');
 const { createUserValidator, loginUserValidator } = require('../validators/user.validator');
 const authenticate = require('../middlewares/auth.middleware');
+const { uploadAvatar } = require('../middlewares/multer');
+const { recortarImageAvatar } = require('../middlewares/recortarImage');
 
 
 const router = Router();
 
-router.post('/users', createUserValidator, createUser);
+router.post('/users', uploadAvatar.single('profileImage'), recortarImageAvatar, createUserValidator, createUser);
 
 router.post('/login', loginUserValidator, loginUser);
 

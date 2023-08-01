@@ -15,6 +15,7 @@ const createConversation = async (req, res, next) => {
             userId: participant,
             conversationId: id
         }));
+
         participantsArray.push({ userId: createdBy, conversationId: id });
         await Participants.bulkCreate(participantsArray)
 
@@ -30,12 +31,12 @@ const getAllConversationUser = async (req, res, next) => {
     try {
         const { id } = req.params;
         const conversation = await Participants.findAll({
-            attributes: {
-                exclude: ['createdBy']
-            },
             where: { userId: id },
             include: {
-                model: Conversations
+                model: Conversations,
+                attributes: {
+                    exclude: ['createdBy']
+                }
             }
         })
         res.json(conversation);
@@ -50,7 +51,7 @@ const getConversationParticipantMessages = async (req, res, next) => {
         const { id } = req.params;
         const conversation = await Conversations.findByPk(id, {
             attributes: {
-
+                exclude: ['createdBy']
             },
             include: [
                 {
@@ -59,9 +60,15 @@ const getConversationParticipantMessages = async (req, res, next) => {
                 {
                     model: Messages,
                     attributes: {
-                        exclude: ['conversationId']
+                        exclude: ['conversationId', 'senderId']
+                    },
+                    include: {
+                        model: Users,
+                        attributes: {
+                            exclude: ['email', 'password', 'createdAt', 'updatedAt']
+                        }
                     }
-                }
+                },
             ]
         })
         res.json(conversation);
@@ -69,7 +76,7 @@ const getConversationParticipantMessages = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
-}
+};
 
 const deleteConversation = async (req, res, next) => {
     try {
@@ -82,7 +89,7 @@ const deleteConversation = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
-}
+};
 
 
 module.exports = {

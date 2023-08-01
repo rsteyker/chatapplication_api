@@ -1,24 +1,33 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const fs = require('fs');
 const { Users } = require('../models');
 require('dotenv').config();
 
-const createUser = async (req, res) => {
+const createUser = async (req, res, next) => {
     try {
         const { firstname, lastname, username, email, password } = req.body;
-
-        //Hashear el password
         const passwordHashed = await bcrypt.hash(password, 10);
+
+        let profileImage = null;
+        if (req.file) {
+            profileImage = req.file.filename
+        }
+
         const user = await Users.create({
             firstname,
             lastname,
             username,
             email,
             password: passwordHashed,
+            profileImage
         })
         res.json(user);
 
     } catch (error) {
+        if (req.file) {
+            fs.unlinkSync(req.file.path)
+        }
         next(error);
     }
 };
